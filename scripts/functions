@@ -1,0 +1,52 @@
+#!/bin/bash
+
+BASEDIR=$(dirname "$0")
+cd ${BASEDIR}
+BASEDIR=`pwd`
+
+unset LANG
+export HOST=x86_64
+export BUILD=$HOST
+export TARGET=i686-none-linux-gnu
+export BUILD_ROOT_DIR=${BASEDIR}/../../
+export BUILD_DIR=${BUILD_ROOT_DIR}/build/
+export CROSS_TOOL=${BUILD_ROOT_DIR}/cross-tool
+export CROSS_GCC_TMP=${BUILD_ROOT_DIR}/cross-gcc-tmp
+export SYSROOT=${BUILD_ROOT_DIR}/sysroot
+export VITA_DIR=${BASEDIR}/../
+export SOURCE_DIR=${VITA_DIR}/source
+PATH=$CROSS_TOOL/bin:$CROSS_GCC_TMP/bin:/sbin/:/usr/sbin:$PATH
+unset PKG_CONFIG_PATH
+export PKG_CONFIG_LIBDIR=$SYSROOT/usr/lib/pkgconfig:SYSROOT/usr/share/pkgconfig
+CORES=4
+SPEEDUP=" -j ${CORES}"
+
+echogreen(){
+    echo -e "\033[32m\033[1m$*\033[0m"
+    return 0
+}
+
+echored(){
+    echo -e "\033[31m\033[1m$*\033[0m"
+    return 0
+}
+
+echoblue(){
+    echo -e "\033[34m\033[1m$*\033[0m"
+    return 0
+}
+
+echohello(){
+    echo "hello!!!"
+    return 0
+}
+
+testA() {
+  echo "TEST A $1";
+}
+
+testB() {
+  echo "TEST B $2";
+}
+
+"$@"

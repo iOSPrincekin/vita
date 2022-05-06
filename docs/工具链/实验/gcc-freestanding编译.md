@@ -38,7 +38,7 @@ echoblue(){
 ```
 
 
-/vita/scriptsmk-freestandinggcc.sh :
+/vita/scripts/mk-freestandinggcc.sh :
 
 ```
 #!/bin/bash

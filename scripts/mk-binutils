@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -e
+
+source functions
+
+function binutils(){
+    cd ${BUILD_DIR}
+
+    test -d binutils-2.23.1 && /bin/rm -rf binutils-2.23.1
+    tar -xf ${SOURCE_DIR}/binutils-2.23.1.tar.bz2
+
+    test -d binutils-build && /bin/rm -rf binutils-build
+    mkdir binutils-build && cd binutils-build
+
+    ../binutils-2.23.1/configure --disable-werror --prefix=$CROSS_TOOL --target=$TARGET --with-sysroot=$SYSROOT  2>&1 | tee log.configure.binutils
+
+    make ${SPEEDUP}  2>&1 | tee log.make.binutils
+
+    make ${SPEEDUP} install 2>&1 | tee log.makeinstall.binutils
+
+    echogreen "ls $CROSS_TOOL/i686-none-linux-gnu/lib/ldscripts"
+    ls $CROSS_TOOL/i686-none-linux-gnu/lib/ldscripts
+    echogreen "ls $CROSS_TOOL/i686-none-linux-gnu/bin"
+    ls $CROSS_TOOL/i686-none-linux-gnu/bin
+    echogreen "ls $CROSS_TOOL/bin"
+    ls $CROSS_TOOL/bin
+    echogreen "### finish binutils build"
+}
+
+binutils
+
