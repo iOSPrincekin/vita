@@ -1,0 +1,37 @@
+#!/bin/bash
+
+set -e
+
+source functions
+
+function glibc(){
+
+	cd ${BUILD_DIR}
+
+	test -d glibc-2.15 && /bin/rm -rf glibc-2.15
+	tar -xf ${SOURCE_DIR}/glibc-2.15.tar.xz
+
+	cd glibc-2.15
+	patch -p1 < ${SOURCE_DIR}/glibc-2.15-cpuid.patch 2>&1 | tee log.glibc.patch.cpuid
+	patch -p1 < ${SOURCE_DIR}/glibc-2.15-s_frexp.patch 2>&1 | tee log.glibc.patch.frexp
+
+
+	mkdir -p ${BUILD_DIR}/glibc_build
+	cd ${BUILD_DIR}/glibc_build
+	echogreen $TARGET
+	echogreen $SYSROOT
+	../glibc-2.15/configure --prefix=/usr --host=$TARGET \
+				--enable-kernel=3.7.4 --enable-add-ons \
+				--with-headers=$SYSROOT/usr/include \
+				libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes \
+				libc_cv_ctors_header=yes 2>&1 | tee log.configure.glibc
+
+	make ${SPEEDUP}  2>&1 | tee log.make.glibc
+
+	make ${SPEEDUP} install_root=$SYSROOT install 2>&1 | tee log.makeinstall.glibc
+	echo "ls $SYSROOT/lib"
+	ls $SYSROOT/lib
+	echogreen "### finished glibc build"
+}
+
+glibc
