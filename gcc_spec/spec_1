@@ -1,0 +1,4 @@
+%rename lib                 old_lib
+
+*lib:
+--start-group -lgcc -lc -leval1 --end-group %(old_lib)

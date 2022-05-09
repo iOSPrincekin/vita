@@ -50,7 +50,8 @@ function freestandinggcc(){
 
     echogreen "ls $CROSS_GCC_TMP"
     ls $CROSS_GCC_TMP/
-
+    
+    cp -R $CROSS_GCC_TMP/bin/ $CROSS_TOOL/bin/
     echogreen "### finish freestanding gcc build"
 }
 
