@@ -8,6 +8,7 @@ set -e
 source functions
 
 #export CFLAGS="$CFLAGS -specs=${BASEDIR}/../gcc_spec/spec_2"
+#export CFLAGS="$CFLAGS -werror"
 #export CPPFLAGS="$CPPFLAGS -specs=${BASEDIR}/../gcc_spec/spec_2"
 #export CPP='i686-none-linux-gnu-gcc -E'
 
@@ -26,37 +27,40 @@ function glibc(){
 
     brew_install "gawk"
     
-	cd ${BUILD_DIR}
+    cd ${BUILD_DIR}
 
     tar -cJf glibc-2.15.tar.xz glibc-2.15
     cp glibc-2.15.tar.xz ${SOURCE_DIR}/glibc-2.15.tar.xz
     
     echogreen "updated glibc-2.15.tar.xz..."
-	test -d glibc-2.15 && /bin/rm -rf glibc-2.15
-	tar -xf ${SOURCE_DIR}/glibc-2.15.tar.xz
+    test -d glibc-2.15 && /bin/rm -rf glibc-2.15
+    tar -xf ${SOURCE_DIR}/glibc-2.15.tar.xz
 
-	cd glibc-2.15
-	patch -p1 < ${SOURCE_DIR}/glibc-2.15-cpuid.patch 2>&1 | tee log.glibc.patch.cpuid
-	patch -p1 < ${SOURCE_DIR}/glibc-2.15-s_frexp.patch 2>&1 | tee log.glibc.patch.frexp
+    cd glibc-2.15
+    patch -p1 < ${SOURCE_DIR}/glibc-2.15-cpuid.patch 2>&1 | tee log.glibc.patch.cpuid
+    patch -p1 < ${SOURCE_DIR}/glibc-2.15-s_frexp.patch 2>&1 | tee log.glibc.patch.frexp
 
 
-	mkdir -p ${BUILD_DIR}/glibc_build
-	cd ${BUILD_DIR}/glibc_build
-	echogreen $TARGET
-	echogreen $SYSROOT
+    mkdir -p ${BUILD_DIR}/glibc_build
+    cd ${BUILD_DIR}/glibc_build
+    echogreen $TARGET
+    echogreen $SYSROOT
     echogreen "CFLAGS-::$CFLAGS"
     echogreen "CPP-::$CPP"
-	../glibc-2.15/configure --prefix=/usr --host=$TARGET \
-				--enable-kernel=3.7.4 --enable-add-ons \
-				--with-headers=$SYSROOT/usr/include \
-				libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes \
-				libc_cv_ctors_header=yes 2>&1 | tee log.configure.glibc
+    # 需要先拷贝libexec、lib文件夹，否则 ../glibc-2.15/configure 时会报 无法编译测试程序 conftest.c ，
+    cp -r ../../cross-gcc-tmp/libexec ../../cross-tool
+    cp -r ../../cross-gcc-tmp/lib ../../cross-tool
+    ../glibc-2.15/configure --prefix=/usr --host=$TARGET \
+                --enable-kernel=3.7.4 --enable-add-ons \
+                --with-headers=$SYSROOT/usr/include \
+                libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes \
+                libc_cv_ctors_header=yes 2>&1 | tee log.configure.glibc
 
-	make ${SPEEDUP}  2>&1 | tee log.make.glibc
-	make ${SPEEDUP} install_root=$SYSROOT install 2>&1 | tee log.makeinstall.glibc
-	echo "ls $SYSROOT/lib"
-	ls $SYSROOT/lib
-	echogreen "### finished glibc build"
+    make ${SPEEDUP}  2>&1 | tee log.make.glibc
+    make ${SPEEDUP} install_root=$SYSROOT install 2>&1 | tee log.makeinstall.glibc
+    echo "ls $SYSROOT/lib"
+    ls $SYSROOT/lib
+    echogreen "### finished glibc build"
 }
 
 glibc
