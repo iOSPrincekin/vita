@@ -28,7 +28,7 @@ function freestandinggcc(){
     test -d ${BUILD_DIR}/gcc-build && /bin/rm -rf ${BUILD_DIR}/gcc-build
     mkdir ${BUILD_DIR}/gcc-build  && cd ${BUILD_DIR}/gcc-build
 
-    CC=/usr/local/Cellar/gcc@7/7.5.0_3/bin/gcc-7 ../gcc-4.7.3/configure  --disable-werror \
+    CC=/usr/local/Cellar/gcc@7/7.5.0_3/bin/gcc-7 ../gcc-4.7.3/configure \
                 --prefix=$CROSS_GCC_TMP \
                 --target=$TARGET \
                 --with-sysroot=$SYSROOT \
@@ -52,6 +52,9 @@ function freestandinggcc(){
     ls $CROSS_GCC_TMP/
     
     cp -R $CROSS_GCC_TMP/bin/ $CROSS_TOOL/bin/
+    # 需要先拷贝libexec、lib文件夹，否则 ../glibc-2.15/configure 时会报 无法编译测试程序 conftest.c ，
+    cp -r $CROSS_GCC_TMP/libexec $CROSS_TOOL/
+    cp -r $CROSS_GCC_TMP/lib $CROSS_TOOL/
     echogreen "### finish freestanding gcc build"
 }
 

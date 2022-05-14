@@ -1,0 +1,48 @@
+#!/bin/bash
+
+set -e
+
+source functions
+
+function fullgcc(){
+
+    cd ${BUILD_DIR}/
+
+    test -d  gcc-4.7.3 && /bin/rm -rf gcc-4.7.3
+    tar -xf ${SOURCE_DIR}/gcc-4.7.3.tar.bz2
+
+    cd gcc-4.7.3/
+
+    tar -xf ${SOURCE_DIR}/gmp-5.0.5.tar.bz2
+    test -d gmp &&  /bin/rm -rf gmp
+    /bin/mv -f  gmp-5.0.5 gmp
+
+    tar -xf ${SOURCE_DIR}/mpfr-3.1.1.tar.bz2  
+    test -d mpfr && /bin/rm -rf mpfr
+    /bin/mv -f  mpfr-3.1.1 mpfr
+
+    tar -xf ${SOURCE_DIR}/mpc-1.0.1.tar.gz
+    test -d mpc && /bin/rm -rf mpc
+    /bin/mv -f  mpc-1.0.1 mpc
+
+    cd ${BUILD_DIR}/
+
+    test -d fullgcc-build && /bin/rm -rf fullgcc-build
+    mkdir fullgcc-build && cd fullgcc-build
+
+    CC=/usr/local/Cellar/gcc@7/7.5.0_3/bin/gcc-7 ../gcc-4.7.3/configure \
+                --prefix=$CROSS_TOOL --target=$TARGET \
+                --with-sysroot=$SYSROOT \
+                --with-mpfr-include=cd ${BUILD_DIR}/gcc-4.7.3/mpfr/src \
+                --with-mpfr-lib=cd ${BUILD_DIR}/fullgcc-build/mpfr/src/.libs \
+                --enable-languages=c,c++ --enable-threads=posix 2>&1 | tee log.fullcompiler
+
+        make ${SPEEDUP} 2>&1 | tee log.make.fullcompiler
+
+        make ${SPEEDUP} install 2>&1 | tee log.makeinstall.fullcompiler
+
+    echogreen "### finish full gcc build"
+}
+
+
+fullgcc
